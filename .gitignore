@@ -74,6 +74,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.flask_session
 
 # Unit test / coverage reports
 htmlcov/
