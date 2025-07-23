@@ -74,7 +74,9 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-*.flask_session
+
+# Ignore Flask session files
+flask_session/
 
 # Unit test / coverage reports
 htmlcov/
