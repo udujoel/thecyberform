@@ -66,29 +66,25 @@ jobs:
         run: |
           nohup flask run --host=0.0.0.0 --port=5000 &
           echo "Waiting for Flask to start..."
-          for i in {1..10}; do
+          for i in {1..15}; do
             curl -s http://localhost:5000 && break
             sleep 3
           done
 
       - name: Prepare ZAP directories
         run: |
-          mkdir -p $GITHUB_WORKSPACE/.zap_config
           mkdir -p $GITHUB_WORKSPACE/zap-reports
 
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           target: 'http://localhost:5000'
-          config-dir: ${{ github.workspace }}/.zap_config
           report-dir: ${{ github.workspace }}/zap-reports
-          format: 'txt'
           fail-on-risks: true
+          github-report: false   # disables automatic GitHub issue creation
 
-      - name: Upload ZAP reports
+      - name: Upload ZAP TXT report
         uses: actions/upload-artifact@v4
         with:
-          name: zap-reports
-          path: ${{ github.workspace }}/zap-reports
+          name: zap-report-txt
+          path: ${{ github.workspace }}/zap-reports/*.txt
