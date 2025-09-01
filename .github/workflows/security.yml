@@ -35,6 +35,16 @@ jobs:
         name: bandit-report
         path: bandit_report.txt
 
+    - name: Start Flask app
+      run: |
+        nohup flask run --host=0.0.0.0 --port=5000 &
+        echo "Waiting for Flask to start..."
+        for i in {1..10}; do
+          curl -s http://localhost:5000 && break
+          sleep 3
+        done
+        echo "Flask app should be running now."
+    
   dast-owasp-zap:
     name: Dynamic Analysis with OWASP ZAP
     runs-on: ubuntu-latest
