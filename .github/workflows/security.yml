@@ -25,7 +25,7 @@ jobs:
 
       - name: Run SAST (Bandit)
         run: |
-          bandit -r . -f txt -o bandit-report.txt || echo "Bandit completed with issues"
+          bandit -r . -lll -f txt -o bandit-report.txt || echo "Bandit completed with issues"
         continue-on-error: true
 
       - name: Upload Bandit report
@@ -61,4 +61,5 @@ jobs:
         with:
           name: zap-report-txt
           path: zap-reports/zap-report.txt
+
 
