@@ -61,6 +61,11 @@ jobs:
             sleep 3
           done
 
+          permissions:
+          contents: read      # needed to checkout code
+          actions: write      # needed to upload artifacts
+          issues: write       # only if you want ZAP to create issues (can be false)
+
       - name: Prepare ZAP directories
         run: |
           mkdir -p $GITHUB_WORKSPACE/zap-reports
@@ -78,4 +83,5 @@ jobs:
         with:
           name: zap-report-txt
           path: ${{ github.workspace }}/zap-reports/*.txt
+
 
