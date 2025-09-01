@@ -1,4 +1,4 @@
-name: Security Analysis Scans
+name: Cyberforum Blog Security CI
 
 on:
   push:
@@ -7,67 +7,88 @@ on:
     branches: [ main ]
 
 jobs:
-  sast-bandit:
-    name: Static Analysis with Bandit
+  build-and-test:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    - name: Install Bandit
-      run: |
-        python -m pip install --upgrade pip
-        pip install bandit
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run Bandit scan
-      run: |
-       bandit -r . -lll -o bandit_report.txt || echo "Bandit scan completed with issues"
+      - name: Run SAST (Bandit)
+        run: |
+          bandit -r . -f txt -o bandit-report.txt
 
-    - name: Upload Bandit report
-      uses: actions/upload-artifact@v4
-      with:
-        name: bandit-report
-        path: bandit_report.txt
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.txt
 
-    - name: Start Flask app
-      run: |
-        nohup flask run --host=0.0.0.0 --port=5000 &
-        echo "Waiting for Flask to start..."
-        for i in {1..10}; do
-          curl -s http://localhost:5000 && break
-          sleep 3
-        done
-        echo "Flask app should be running now."
-    
-  dast-owasp-zap:
-    name: Dynamic Analysis with OWASP ZAP
+      - name: Run Pytest
+        run: |
+          pytest tests --maxfail=1 --disable-warnings -q
+        continue-on-error: false
+
+      - name: Upload Pytest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: tests/test-results/
+
+  zap-dast:
     runs-on: ubuntu-latest
-    needs: sast-bandit
-
+    needs: build-and-test
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Start Flask app
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        nohup flask run --host=0.0.0.0 --port=5000 &
-        sleep 10
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    - name: Run OWASP ZAP baseline scan
-      uses: zaproxy/action-baseline@v0.10.0
-      with:
-        target: 'http://localhost:5000'
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Upload ZAP report
-      uses: actions/upload-artifact@v4
-      with:
-        name: zap-report
-        path: report_html.html
+      - name: Start Flask app
+        run: |
+          nohup flask run --host=0.0.0.0 --port=5000 &
+          echo "Waiting for Flask to start..."
+          for i in {1..10}; do
+            curl -s http://localhost:5000 && break
+            sleep 3
+          done
+
+      - name: Prepare ZAP directories
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/.zap_config
+          mkdir -p $GITHUB_WORKSPACE/zap-reports
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.10.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          target: 'http://localhost:5000'
+          config-dir: ${{ github.workspace }}/.zap_config
+          report-dir: ${{ github.workspace }}/zap-reports
+          format: 'txt'
+          fail-on-risks: true
+
+      - name: Upload ZAP reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-reports
+          path: ${{ github.workspace }}/zap-reports
