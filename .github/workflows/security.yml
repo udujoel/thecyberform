@@ -45,6 +45,9 @@ jobs:
           name: pytest-report
           path: tests/test-results/
 
+      - name: Create zap-reports directory
+        run: mkdir -p zap-reports
+
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
         with:
@@ -58,3 +61,4 @@ jobs:
         with:
           name: zap-report-txt
           path: zap-reports/zap-report.txt
+
