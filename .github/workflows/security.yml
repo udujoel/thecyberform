@@ -30,7 +30,7 @@ jobs:
         bandit -r . -lll -o bandit_report.txt
 
     - name: Upload Bandit report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: bandit-report
         path: bandit_report.txt
@@ -57,7 +57,7 @@ jobs:
         target: 'http://localhost:5000'
 
     - name: Upload ZAP report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: zap-report
         path: report_html.html
