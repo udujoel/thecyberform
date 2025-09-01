@@ -55,7 +55,7 @@
                     {{ post['created']|iso_to_pretty('%B %d, %Y at %H:%M') }}
                   </div>
                 </div>
-                <div class="btn-group btn-group-sm mt-2 mt-md-0" role="group">
+                <fieldset class="btn-group btn-group-sm mt-2 mt-md-0" style="border: none; padding: 0; margin: 0;">
                   <a
                     href="{{ url_for('edit', post_id=post['id']) }}"
                     class="btn btn-warning"
@@ -74,7 +74,7 @@
                       Delete
                     </button>
                   </form>
-                </div>
+                </fieldset>
               </div>
             </li>
             {% endfor %}
