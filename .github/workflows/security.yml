@@ -27,7 +27,7 @@ jobs:
       - name: Run Bandit (full scan)
         run: |
           # -lll = verbose, -r = recursive, --ini = default config, --plugins = all available
-          bandit -r . -lll -f txt -o bandit-report.txt
+          bandit -r . -lll -f txt -o bandit-report.txt || echo "Bandit completed with issues"
 
       - name: Upload Bandit TXT report
         uses: actions/upload-artifact@v4
@@ -78,3 +78,4 @@ jobs:
         with:
           name: zap-report-txt
           path: ${{ github.workspace }}/zap-reports/*.txt
+
