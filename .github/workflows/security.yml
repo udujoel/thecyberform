@@ -27,6 +27,29 @@ jobs:
           bandit -r . -f txt -o bandit-report.txt
           bandit -r . -f html -o bandit-report.html
 
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start Flask application
+        run: |
+          export FLASK_APP=app.py
+          flask run --host=0.0.0.0 --port=8080 &
+          sleep 10  # Wait for the app to start
+
+      - name: Run OWASP ZAP Scan
+        uses: zaproxy/action-baseline@v0.11.0
+        with:
+          target: 'http://localhost:8080'
+          rules_file_name: 'Light'
+          cmd_options: '-a'
+
+      - name: Upload ZAP Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap-report.html
+
       - name: Upload Security Reports
         uses: actions/upload-artifact@v4
         with:
@@ -34,6 +57,3 @@ jobs:
           path: |
             bandit-report.txt
             bandit-report.html
-
-
-
