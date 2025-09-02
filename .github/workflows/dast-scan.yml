@@ -45,7 +45,7 @@ jobs:
           gunicorn -w 2 -b 0.0.0.0:8080 app:app &
           # wait until server is up and responding
           for i in {1..30}; do
-            if curl -f http://localhost:8080/thecyberforum/ > /dev/null 2>&1; then
+            if curl -f http://localhost:8080/ > /dev/null 2>&1; then
               echo "Flask started and responding"
               break
             fi
@@ -53,7 +53,7 @@ jobs:
             sleep 2
           done
           # Test the endpoint
-          curl -I http://localhost:8080/thecyberforum/ || echo "Warning: App may not be fully ready"
+          curl -I http://localhost:8080/ || echo "Warning: App may not be fully ready"
 
       # -------------------------------
       # Prepare ZAP workspace
@@ -68,11 +68,11 @@ jobs:
       - name: Run OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
-          target: 'http://localhost:8080/thecyberforum/'
+          target: 'http://localhost:8080/'
           cmd_options: "-a"
           fail_action: false
           allow_issue_writing: false
-          artifact_name: false
+          token: ''
           
 
       # -------------------------------
