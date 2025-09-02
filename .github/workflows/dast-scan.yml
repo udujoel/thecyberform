@@ -47,7 +47,7 @@ jobs:
       # Prepare ZAP workspace
       # -------------------------------
       - name: Prepare ZAP working folder
-        run: mkdir -p zap-wrk
+        run: mkdir -p /zap/wrk
 
       # -------------------------------
       # Run OWASP ZAP DAST Scan
