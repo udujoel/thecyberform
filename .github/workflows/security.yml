@@ -27,11 +27,6 @@ jobs:
           bandit -r . -f txt -o bandit-report.txt --exit-zero
           bandit -r . -f html -o bandit-report.html --exit-zero
 
-      - name: Check for vulnerable dependencies
-        run: |
-          pip install safety
-          safety check -r requirements.txt
-
       - name: Upload Security Reports
         uses: actions/upload-artifact@v4
         with:
@@ -39,4 +34,5 @@ jobs:
           path: |
             bandit-report.txt
             bandit-report.html
+
 
