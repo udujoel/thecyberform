@@ -30,14 +30,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Start Flask application
+      - name: Start Flask application for ZAP
         run: |
-          export FLASK_APP=app.py
-          flask run --host=0.0.0.0 --port=8080 &
+          pip install gunicorn
+          gunicorn -w 2 -b 0.0.0.0:8080 app:app &
           for i in {1..10}; do
             nc -z localhost 8080 && echo "Flask started" && break
             sleep 2
           done
+
 
       - name: Prepare ZAP directories
         run: mkdir -p $GITHUB_WORKSPACE/zap-reports
@@ -62,8 +63,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-reports
-          path:  |
-            name: zap-reports.txt
-            path: zap-reports.html
+          path: zap-reports/
+
 
 
