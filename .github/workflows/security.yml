@@ -39,11 +39,14 @@ jobs:
             sleep 2
           done
 
+      - name: Prepare ZAP directories
+        run: mkdir -p $GITHUB_WORKSPACE/zap-reports
+
       - name: Run OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: 'http://localhost:8080'
-          cmd_options: '-a -r zap-report.html -w zap-report.txt'
+          cmd_options: '-a -r $GITHUB_WORKSPACE/zap-reports/zap-report.html -w $GITHUB_WORKSPACE/zap-reports/zap-report.txt'
 
       - name: Upload Bandit Reports
         if: always()
@@ -59,6 +62,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-reports
-          path: |
-            zap-report.html
-            zap-report.txt
+          path: $GITHUB_WORKSPACE/zap-reports/
+
