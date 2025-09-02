@@ -35,6 +35,6 @@ jobs:
       - name: OWASP ZAP Full Scan with Report Artifact
         uses: zaproxy/action-full-scan@v0.12.0
         with:
-          target: 'http://localhost:5000'
+          target: 'https://github.com/AugustusNnamdi/thecyberform.git'
           fail_action: false
           artifact_name: 'zap_dast_report' # Custom name for the artifact
