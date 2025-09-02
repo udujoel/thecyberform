@@ -75,30 +75,30 @@ jobs:
       # -------------------------------
       # Prepare report folder for GitHub Pages
       # -------------------------------
-      - name: Prepare report for GitHub Pages
-        run: |
-          mkdir -p zap_report
-          mv report_html.html zap_report/index.html
+      # - name: Prepare report for GitHub Pages
+      #   run: |
+      #     mkdir -p zap_report
+      #     mv report_html.html zap_report/index.html
 
       
       
-      # -------------------------------
-      # Deploy HTML report to GitHub Pages
-      # -------------------------------
-      - name: Deploy ZAP HTML report to GitHub Pages
-        id: publish
-        if: always()
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./zap_report
-          publish_branch: gh-pages
-          user_name: "github-actions[bot]"
-          user_email: "github-actions[bot]@users.noreply.github.com"
+      # # -------------------------------
+      # # Deploy HTML report to GitHub Pages
+      # # -------------------------------
+      # - name: Deploy ZAP HTML report to GitHub Pages
+      #   id: publish
+      #   if: always()
+      #   uses: peaceiris/actions-gh-pages@v4
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./zap_report
+      #     publish_branch: gh-pages
+      #     user_name: "github-actions[bot]"
+      #     user_email: "github-actions[bot]@users.noreply.github.com"
 
-      # -------------------------------
-      # Set ZAP report URL as job output
-      # -------------------------------
-      - name: Set ZAP report URL output
-        id: set-url
-        run: echo "zap_report_url=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY}/index.html" >> $GITHUB_OUTPUT
+      # # -------------------------------
+      # # Set ZAP report URL as job output
+      # # -------------------------------
+      # - name: Set ZAP report URL output
+      #   id: set-url
+      #   run: echo "zap_report_url=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY}/index.html" >> $GITHUB_OUTPUT
