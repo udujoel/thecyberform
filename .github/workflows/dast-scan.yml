@@ -67,5 +67,5 @@ jobs:
         with:
           name: zap-reports
           path: |
-            zap-report.txt
-            zap-report.html
+            zap_report.txt
+            zap_report.html
