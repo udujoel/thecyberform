@@ -56,7 +56,7 @@ jobs:
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: 'http://localhost:8080'
-          cmd_options: "-a -rw zap/wrk/zap-reports.html -rw zap/wrk/zap-reports.txt"
+          cmd_options: "-a -r zap_reports.html -w zap_reports.txt"
 
       # -------------------------------
       # Upload ZAP reports as artifacts
@@ -67,5 +67,5 @@ jobs:
         with:
           name: zap-reports
           path: |
-            zap-reports.txt
-            zap-reports.html
+            zap-report.txt
+            zap-report.html
