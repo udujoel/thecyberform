@@ -95,7 +95,8 @@ jobs:
           user_email: "github-actions[bot]@users.noreply.github.com"
 
       # -------------------------------
-      # Print the GitHub Pages URL
+      # Set ZAP report URL as job output
       # -------------------------------
-      - name: Output ZAP Report URL
-        run: echo "ZAP HTML report URL: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/index.html"
+      - name: Set ZAP report URL output
+        id: set-url
+        run: echo "zap_report_url=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY}/index.html" >> $GITHUB_OUTPUT
