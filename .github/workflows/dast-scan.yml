@@ -56,7 +56,7 @@ jobs:
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: 'http://localhost:8080'
-          cmd_options: "-a -r zap-wrk/zap-report.html -w zap-wrk/zap-report.txt --exitcodefail false"
+          cmd_options: "-a -rw zap-wrk/zap-reports*"
 
       # -------------------------------
       # Upload ZAP reports as artifacts
