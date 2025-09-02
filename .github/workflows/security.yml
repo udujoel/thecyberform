@@ -8,64 +8,34 @@ on:
 
 jobs:
   security-scan:
-    name: 🔍 SAST & Dependency Scan
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code (full history)
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Gets full repo history for better analysis
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'  # Pin to your specific version
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-    - name: Debug - Show environment info
-      run: |
-        echo "Working directory: $(pwd)"
-        echo "Python version: $(python --version)"
-        echo "Pip version: $(pip --version)"
-        ls -la
+      - name: Install Bandit
+        run: pip install bandit
 
-    - name: Install project dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Run Bandit Security Scan
+        run: |
+          bandit -r . -f txt -o bandit-report.txt
+          bandit -r . -f html -o bandit-report.html
 
-    - name: Install pinned Bandit version
-      run: |
-        # Replace with the version you use locally: `bandit --version`
-        pip install bandit==1.7.5
+      - name: Check for vulnerable dependencies
+        run: |
+          pip install safety
+          safety check -r requirements.txt
 
-    - name: Run Bandit scan (consistent with local)
-      run: |
-        echo "Running Bandit from: $(pwd)"
-        echo "Bandit version: $(bandit --version)"
-        
-        # Use explicit path to ensure consistency
-        bandit -r "$GITHUB_WORKSPACE" -f txt -o bandit_text_report.txt
-        bandit -r "$GITHUB_WORKSPACE" -f html -o bandit_report.html
-        
-        # Display text results in logs for immediate visibility
-        echo "=== BANDIT TEXT REPORT ==="
-        cat bandit_text_report.txt
-
-    - name: Upload Bandit reports as artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: security-reports
-        path: |
-          bandit_report.html
-          bandit_text_report.txt
-
-    # Optional: Fail the build on high-severity findings
-    - name: Fail on high-severity issues
-      run: |
-        if grep -q "High severity:" bandit_text_report.txt; then
-          echo "❌ High severity security issues found! Failing build."
-          exit 1
-        else
-          echo "✅ No high severity issues found."
-        fi
+      - name: Upload Security Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit-report.txt
+            bandit-report.html
