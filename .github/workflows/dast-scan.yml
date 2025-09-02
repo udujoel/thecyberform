@@ -56,11 +56,10 @@ jobs:
       - name: Run OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
-          name: zap-scan
           target: 'http://localhost:8080'
           cmd_options: "-a"   
-          # fail_action: false
-          # allow_issue_writing: false
+          fail_action: false
+          allow_issue_writing: false
           
 
       # -------------------------------
