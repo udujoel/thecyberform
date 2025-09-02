@@ -353,4 +353,8 @@ def iso_to_pretty(value, fmt='%B %-d, %Y'):
     return datetime.fromisoformat(value.replace('Z', '+00:00')).strftime(fmt)
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    host = os.getenv("FLASK_RUN_HOST", "127.0.0.1")
+    port = int(os.getenv("FLASK_RUN_PORT", 5000))
+    debug = os.getenv("FLASK_DEBUG", "False").lower() in ("true", "1", "yes")
+
+    app.run(host=host, port=port, debug=debug)
