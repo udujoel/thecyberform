@@ -26,10 +26,16 @@ jobs:
           python-version: '3.10'
 
       # -------------------------------
-      # Install dependencies
+      # Install dependencies and setup
       # -------------------------------
       - name: Install Python dependencies
         run: pip install -r requirements.txt gunicorn
+
+      # -------------------------------
+      # Initialize database
+      # -------------------------------
+      - name: Initialize database
+        run: python init_db.py
 
       # -------------------------------
       # Start Flask app using Gunicorn
@@ -37,13 +43,23 @@ jobs:
       - name: Start Flask blog
         run: |
           gunicorn -w 2 -b 0.0.0.0:8080 app:app &
-          # wait until server is up
-          for i in {1..15}; do
-            nc -z localhost 8080 && echo "Flask started" && break
+          # wait until server is up and responding
+          for i in {1..30}; do
+            if curl -f http://localhost:8080/thecyberforum/ > /dev/null 2>&1; then
+              echo "Flask started and responding"
+              break
+            fi
+            echo "Waiting for Flask to start... ($i/30)"
             sleep 2
           done
+          # Test the endpoint
+          curl -I http://localhost:8080/thecyberforum/ || echo "Warning: App may not be fully ready"
 
-  
+      # -------------------------------
+      # Prepare ZAP workspace
+      # -------------------------------
+      # - name: Prepare ZAP working folder
+      #   run: mkdir -p /zap/wrk
       
 
       # -------------------------------
@@ -52,24 +68,12 @@ jobs:
       - name: Run OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
-          target: 'http://localhost:8080'
-          cmd_options: "-a"   
+          target: 'http://localhost:8080/thecyberforum/'
+          cmd_options: "-a"
           fail_action: false
           allow_issue_writing: false
+          artifact_name: false
           
-
-      # # -------------------------------
-      # # Upload ZAP reports as artifacts
-      # # -------------------------------
-      # - name: Upload ZAP Reports
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: zap-reports
-      #     path: |
-      #       report_json.json
-      #       report_md.md
-      #       report_html.html
 
       # -------------------------------
       # Prepare report folder for GitHub Pages
