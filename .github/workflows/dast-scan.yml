@@ -56,7 +56,7 @@ jobs:
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: 'http://localhost:8080'
-          cmd_options: "-a -r $GITHUB_WORKSPACE/zap-wrk/zap-report.html -w $GITHUB_WORKSPACE/zap-wrk/zap-report.txt"
+          cmd_options: "-a -r zap-wrk/zap-report.html -w zap-wrk/zap-report.txt"
 
       # -------------------------------
       # Upload ZAP reports as artifacts
@@ -66,4 +66,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-reports
-          path: $GITHUB_WORKSPACE/zap-wrk/
+          path: zap-wrk/
