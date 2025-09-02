@@ -24,8 +24,8 @@ jobs:
 
       - name: Run Bandit Security Scan
         run: |
-          bandit -r . -f txt -o bandit-report.txt --exit-zero
-          bandit -r . -f html -o bandit-report.html --exit-zero
+          bandit -r . -f txt -o bandit-report.txt
+          bandit -r . -f html -o bandit-report.html
 
       - name: Upload Security Reports
         uses: actions/upload-artifact@v4
@@ -34,5 +34,6 @@ jobs:
           path: |
             bandit-report.txt
             bandit-report.html
+
 
 
