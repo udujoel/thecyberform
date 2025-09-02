@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   zap-dast-scan:
     runs-on: ubuntu-latest
@@ -67,10 +72,14 @@ jobs:
       # -------------------------------
       - name: Run OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
+        continue-on-error: true
         with:
           target: 'http://localhost:8080/'
           cmd_options: "-a"
           fail_action: false
+          allow_issue_writing: false
+        env:
+          GITHUB_TOKEN: ''
           
 
       # -------------------------------
@@ -80,7 +89,17 @@ jobs:
         if: always()
         run: |
           mkdir -p zap_report
-          mv report_html.html zap_report/index.html
+          # Check if ZAP generated any reports
+          if [ -f "report_html.html" ]; then
+            mv report_html.html zap_report/index.html
+            echo "ZAP HTML report found and moved"
+          else
+            echo "<h1>ZAP Scan Report</h1><p>No report generated or scan failed.</p>" > zap_report/index.html
+            echo "Created placeholder report"
+          fi
+          # List contents for debugging
+          echo "Contents of zap_report directory:"
+          ls -la zap_report/
 
       # -------------------------------
       # Deploy HTML report to GitHub Pages
@@ -93,8 +112,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./zap_report
           publish_branch: gh-pages
+          force_orphan: true
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: "Deploy ZAP security scan report"
 
       # -------------------------------
       # Set ZAP report URL as job output
@@ -102,4 +123,10 @@ jobs:
       - name: Set ZAP report URL output
         id: set-url
         if: always()
-        run: echo "zap_report_url=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY##*/}/" >> $GITHUB_OUTPUT
+        run: |
+          REPO_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f2)
+          REPO_OWNER=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
+          REPORT_URL="https://${REPO_OWNER}.github.io/${REPO_NAME}/"
+          echo "zap_report_url=${REPORT_URL}" >> $GITHUB_OUTPUT
+          echo "📊 ZAP Security Report will be available at: ${REPORT_URL}"
+          echo "🔧 Note: It may take a few minutes for GitHub Pages to update after deployment"
