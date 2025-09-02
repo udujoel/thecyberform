@@ -86,7 +86,7 @@ jobs:
       - name: Deploy ZAP HTML report to GitHub Pages
         id: publish
         if: always()
-        uses: peaceiris/actions-gh-pages@v6
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./zap_report
