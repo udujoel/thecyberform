@@ -1,40 +1,69 @@
-name: OWASP ZAP DAST Scan
+name: Flask Blog Security Scan
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  dast-scan:
+  zap-dast-scan:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      # -------------------------------
+      # Checkout repo
+      # -------------------------------
+      - name: Checkout code
         uses: actions/checkout@v4
 
+      # -------------------------------
+      # Set up Python
+      # -------------------------------
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      # -------------------------------
+      # Install dependencies
+      # -------------------------------
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt gunicorn
+
+      # -------------------------------
+      # Start Flask app using Gunicorn
+      # -------------------------------
+      - name: Start Flask blog
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install gunicorn
+          gunicorn -w 2 -b 0.0.0.0:8080 app:app &
+          # wait until server is up
+          for i in {1..10}; do
+            nc -z localhost 8080 && echo "Flask started" && break
+            sleep 2
+          done
 
-      - name: Run Flask application
-        run: |
-          export FLASK_APP=app.py
-          flask run --host=127.0.0.1 --port=5000 &
-          sleep 10  # wait for app startup
+      # -------------------------------
+      # Prepare ZAP workspace
+      # -------------------------------
+      - name: Prepare ZAP working folder
+        run: mkdir -p $GITHUB_WORKSPACE/zap-wrk
 
-      - name: Wait for the application to start
-        run: sleep 10
-
-      - name: OWASP ZAP Full Scan with Report Artifact
-        uses: zaproxy/action-full-scan@v0.12.0
+      # -------------------------------
+      # Run OWASP ZAP DAST Scan
+      # -------------------------------
+      - name: Run OWASP ZAP Scan
+        uses: zaproxy/action-baseline@v0.11.0
         with:
-          target: 'https://github.com/AugustusNnamdi/thecyberform.git'
-          fail_action: false
-          artifact_name: 'zap_dast_report' # Custom name for the artifact
+          target: 'http://localhost:8080'
+          cmd_options: "-a -r $GITHUB_WORKSPACE/zap-wrk/zap-report.html -w $GITHUB_WORKSPACE/zap-wrk/zap-report.txt"
+
+      # -------------------------------
+      # Upload ZAP reports as artifacts
+      # -------------------------------
+      - name: Upload ZAP Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-reports
+          path: $GITHUB_WORKSPACE/zap-wrk/
