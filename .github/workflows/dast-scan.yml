@@ -71,3 +71,31 @@ jobs:
             report_json.json
             report_md.md
             report_html.html
+
+      # -------------------------------
+      # Prepare report folder for GitHub Pages
+      # -------------------------------
+      - name: Prepare report for GitHub Pages
+        run: |
+          mkdir -p zap_report
+          mv report_html.html zap_report/index.html
+
+      # -------------------------------
+      # Deploy HTML report to GitHub Pages
+      # -------------------------------
+      - name: Deploy ZAP HTML report to GitHub Pages
+        id: publish
+        if: always()
+        uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./zap_report
+          publish_branch: gh-pages
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+
+      # -------------------------------
+      # Print the GitHub Pages URL
+      # -------------------------------
+      - name: Output ZAP Report URL
+        run: echo "ZAP HTML report URL: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/index.html"
