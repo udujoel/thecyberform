@@ -33,3 +33,13 @@ jobs:
           pip install bandit
           bandit -r . -f html -o bandit_report.html || true # Run even if it finds issues
         continue-on-error: true # Don't fail the whole job, report
+
+      # Archive the reports so you can download them from the Actions UI
+      - name: Archive security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit_report.html
+          # dependency-check-report.html (if used)
+
