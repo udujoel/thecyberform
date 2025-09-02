@@ -1,9 +1,9 @@
 name: OWASP ZAP DAST Scan
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   dast-scan:
@@ -23,73 +23,18 @@ jobs:
           pip install -r requirements.txt
           pip install gunicorn
 
-      - name: Create minimal environment configuration
+      - name: Run Flask application
         run: |
-          # Create essential environment variables to prevent crashes
-          echo "FLASK_ENV=production" >> $GITHUB_ENV
-          echo "SECRET_KEY=test-key-for-ci-cd-$(date +%s)" >> $GITHUB_ENV
-          echo "DATABASE_URL=sqlite:///tmp/test.db" >> $GITHUB_ENV
-          echo "DEBUG=False" >> $GITHUB_ENV
+          export FLASK_APP=app.py
+          flask run --host=127.0.0.1 --port=8080 &
+          sleep 10  # wait for app startup
 
-      - name: Run Flask app with Gunicorn (minimal mode)
-        run: |
-          # Use a simple test app if main app fails
-          if [ -f "app.py" ]; then
-            echo "Starting main application..."
-            gunicorn -b 127.0.0.1:5000 app:app --timeout 120 --preload &
-          else
-            # Create a minimal test app
-            echo "Creating minimal test app..."
-            cat > minimal_app.py << 'EOF'
-from flask import Flask
-app = Flask(__name__)
-@app.route('/')
-def home():
-    return "Hello, ZAP Scan!"
-@app.route('/health')
-def health():
-    return "OK"
-EOF
-            gunicorn -b 127.0.0.1:5000 minimal_app:app --timeout 120 &
-          fi
+      - name: Wait for the application to start
+        run: sleep 10
 
-      - name: Wait and verify application health
-        run: |
-          sleep 8
-          echo "Testing application health..."
-          for i in {1..5}; do
-            if curl -f http://127.0.0.1:5000/health 2>/dev/null || curl -f http://127.0.0.1:5000/ 2>/dev/null; then
-              echo "Application is responsive!"
-              exit 0
-            fi
-            echo "Attempt $i: Application not ready, waiting..."
-            sleep 3
-          done
-          echo "ERROR: Application failed to become responsive"
-          echo "Current processes:"
-          ps aux
-          exit 1
-
-      - name: Run OWASP ZAP Full Scan
+      - name: OWASP ZAP Full Scan with Report Artifact
         uses: zaproxy/action-full-scan@v0.12.0
         with:
-          target: 'http://127.0.0.1:5000'
+          target: 'http://localhost:5000'
           fail_action: false
-          cmd_options: '-a'
-
-      - name: Upload ZAP Report as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-dast-report
-          path: zap_report.html
-
-      - name: Show application logs if failed
-        if: failure()
-        run: |
-          echo "=== Debug Information ==="
-          echo "Environment variables:"
-          printenv | grep -E "(FLASK|DATABASE|SECRET)"
-          echo "Running processes:"
-          ps aux
-          echo "Open ports:"
-          netstat -tulpn || ss -tulpn
+          artifact_name: 'zap_dast_report' # Custom name for the artifact
