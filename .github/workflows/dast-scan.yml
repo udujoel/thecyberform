@@ -149,9 +149,6 @@ jobs:
           echo "1. 🌐 GitHub Pages: ${REPORT_URL} (may take 5-10 minutes to update)"
           echo "2. 📁 Artifacts: Download from the workflow run link above"
           echo "3. 🔍 Raw Files: Check the 'zap_report' folder in this workflow run"
-          echo ""
-          echo "⚠️  Note: If you're using a forked repository, GitHub Pages might have restricted permissions."
-          echo "📥 In that case, download the artifact from the workflow run page."
           
           # Set output for other jobs/steps
           echo "zap_report_url=${REPORT_URL}" >> $GITHUB_OUTPUT
