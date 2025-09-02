@@ -353,4 +353,4 @@ def iso_to_pretty(value, fmt='%B %-d, %Y'):
     return datetime.fromisoformat(value.replace('Z', '+00:00')).strftime(fmt)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
